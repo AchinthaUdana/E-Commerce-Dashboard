@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusCommerce - Next-Gen Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --space-blue: #0F1A2A;
+            --electric-violet: #8A2BE2;
+            --cyber-teal: #00F5D0;
+            --neon-pink: #FF10F0;
+            --dark-purple: #1A0A2E;
+            --glass-bg: rgba(15, 26, 42, 0.6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--space-blue), var(--dark-purple));
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></svg>');
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+            transition: all 0.5s ease;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(138, 43, 226, 0.2);
+            padding: 2rem 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 2px;
+            background: linear-gradient(to bottom, transparent, var(--electric-violet), transparent);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            color: var(--cyber-teal);
+            font-size: 2rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.2), transparent);
+            transition: all 0.6s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(138, 43, 226, 0.1);
+            color: white;
+        }
+
+        .nav-item:hover::before {
+            left: 100%;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(138, 43, 226, 0.3), transparent);
+            color: white;
+            border-left: 3px solid var(--cyber-teal);
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--cyber-teal), var(--electric-violet));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            display: inline-block;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--cyber-teal), var(--electric-violet));
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.5s ease;
+        }
+
+        .page-title:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .search-bar {
+            position: relative;
+        }
+
+        .search-bar input {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border-radius: 30px;
+            color: white;
+            width: 220px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--electric-violet);
+            width: 250px;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--cyber-teal);
+        }
+
+        .notification-bell {
+            position: relative;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .notification-bell:hover {
+            color: var(--cyber-teal);
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--neon-pink);
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(138, 43, 226, 0.1);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(138, 43, 226, 0.1), transparent 70%);
+            z-index: -1;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(138, 43, 226, 0.3);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--electric-violet), var(--neon-pink));
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, white, var(--cyber-teal));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .card-change {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+
+        .positive {
+            color: #00ffaa;
+        }
+
+        .negative {
+            color: #ff4d6d;
+        }
+
+        /* Chart Card */
+        .chart-container {
+            height: 200px;
+            position: relative;
+        }
+
+        /* 3D Product Carousel */
+        .product-carousel {
+            grid-column: span 2;
+            height: 300px;
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .carousel-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s;
+        }
+
+        .carousel-item {
+            position: absolute;
+            width: 200px;
+            height: 250px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .carousel-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(0, 245, 208, 0.1), transparent);
+        }
+
+        .carousel-item img {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            margin-bottom: 1rem;
+            transition: all 0.5s ease;
+        }
+
+        .carousel-item:hover img {
+            transform: scale(1.1) translateY(-10px);
+        }
+
+        .carousel-item h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .carousel-item .price {
+            font-weight: bold;
+            color: var(--cyber-teal);
+        }
+
+        .carousel-nav {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .carousel-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-dot.active {
+            background: var(--cyber-teal);
+            transform: scale(1.3);
+        }
+
+        /* Customer Sentiment */
+        .sentiment-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .sentiment-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .sentiment-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .sentiment-emoji {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sentiment-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .sentiment-value {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-top: 0.3rem;
+        }
+
+        /* Recent Orders */
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .orders-table th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            color: var(--cyber-teal);
+            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
+        }
+
+        .orders-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .orders-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .orders-table tr:hover td {
+            background: rgba(138, 43, 226, 0.1);
+        }
+
+        .status {
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status.completed {
+            background: rgba(0, 255, 170, 0.1);
+            color: #00ffaa;
+        }
+
+        .status.pending {
+            background: rgba(255, 214, 10, 0.1);
+            color: #ffd60a;
+        }
+
+        .status.cancelled {
+            background: rgba(255, 77, 109, 0.1);
+            color: #ff4d6d;
+        }
+
+        /* 3D Globe Container */
+        .globe-container {
+            height: 250px;
+            position: relative;
+            grid-column: span 2;
+        }
+
+        #globe {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 80px 1fr;
+            }
+
+            .logo span, .nav-item span {
+                display: none;
+            }
+
+            .logo {
+                justify-content: center;
+            }
+
+            .nav-item {
+                justify-content: center;
+                padding: 0.75rem;
+            }
+
+            .nav-item i {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .product-carousel, .globe-container {
+                grid-column: span 1;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .user-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .search-bar input {
+                width: 180px;
+            }
+
+            .search-bar input:focus {
+                width: 200px;
+            }
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--electric-violet);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--cyber-teal);
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles-js"></div>
+    
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <a href="#" class="logo">
+                <i class="fas fa-atom logo-icon"></i>
+                <span>NexusCommerce</span>
+            </a>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Products</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Customers</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-truck"></i>
+                    <span>Orders</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1 class="page-title">Dashboard Overview</h1>
+                
+                <div class="user-controls">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search...">
+                    </div>
+                    
+                    <div class="notification-bell">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </div>
+                    
+                    <div class="user-profile">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User" class="avatar">
+                        <span>Admin</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-grid">
+                <!-- Sales Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Total Sales</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">$24,589</div>
+                    <div class="card-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>12.5% from last month</span>
+                    </div>
+                </div>
+                
+                <!-- Orders Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Total Orders</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">1,248</div>
+                    <div class="card-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>8.3% from last month</span>
+                    </div>
+                </div>
+                
+                <!-- Customers Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">New Customers</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">342</div>
+                    <div class="card-change negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>3.2% from last month</span>
+                    </div>
+                </div>
+                
+                <!-- Conversion Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Conversion Rate</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">3.42%</div>
+                    <div class="card-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>1.1% from last month</span>
+                    </div>
+                </div>
+                
+                <!-- Sales Chart -->
+                <div class="card" style="grid-column: span 2;">
+                    <div class="card-header">
+                        <h2 class="card-title">Sales Performance</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Product Carousel -->
+                <div class="card product-carousel">
+                    <div class="card-header">
+                        <h2 class="card-title">Featured Products</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <div class="carousel-container" id="carousel">
+                        <!-- Items will be added by JavaScript -->
+                    </div>
+                    <div class="carousel-nav" id="carousel-nav">
+                        <!-- Dots will be added by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Customer Sentiment -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Customer Sentiment</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                    </div>
+                    <div class="sentiment-grid">
+                        <div class="sentiment-item">
+                            <div class="sentiment-emoji">😍</div>
+                            <div class="sentiment-label">Love it</div>
+                            <div class="sentiment-value">42%</div>
+                        </div>
+                        <div class="sentiment-item">
+                            <div class="sentiment-emoji">😊</div>
+                            <div class="sentiment-label">Like it</div>
+                            <div class="sentiment-value">35%</div>
+                        </div>
+                        <div class="sentiment-item">
+                            <div class="sentiment-emoji">😐</div>
+                            <div class="sentiment-label">Neutral</div>
+                            <div class="sentiment-value">15%</div>
+                        </div>
+                        <div class="sentiment-item">
+                            <div class="sentiment-emoji">😕</div>
+                            <div class="sentiment-label">Dislike</div>
+                            <div class="sentiment-value">5%</div>
+                        </div>
+                        <div class="sentiment-item">
+                            <div class="sentiment-emoji">😠</div>
+                            <div class="sentiment-label">Hate it</div>
+                            <div class="sentiment-value">3%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Orders -->
+                <div class="card" style="grid-column: span 2;">
+                    <div class="card-header">
+                        <h2 class="card-title">Recent Orders</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#NC-5489</td>
+                                    <td>Sarah Johnson</td>
+                                    <td>May 12, 2023</td>
+                                    <td>$189.99</td>
+                                    <td><span class="status completed">Completed</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#NC-5488</td>
+                                    <td>Michael Chen</td>
+                                    <td>May 12, 2023</td>
+                                    <td>$245.50</td>
+                                    <td><span class="status pending">Pending</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#NC-5487</td>
+                                    <td>Emily Rodriguez</td>
+                                    <td>May 11, 2023</td>
+                                    <td>$89.99</td>
+                                    <td><span class="status completed">Completed</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#NC-5486</td>
+                                    <td>David Kim</td>
+                                    <td>May 11, 2023</td>
+                                    <td>$320.00</td>
+                                    <td><span class="status cancelled">Cancelled</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#NC-5485</td>
+                                    <td>Jessica Williams</td>
+                                    <td>May 10, 2023</td>
+                                    <td>$154.75</td>
+                                    <td><span class="status completed">Completed</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- 3D Globe -->
+                <div class="card globe-container">
+                    <div class="card-header">
+                        <h2 class="card-title">Global Sales Distribution</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                    </div>
+                    <div id="globe"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Particles.js initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create particles
+            const particlesContainer = document.getElementById('particles-js');
+            const particleCount = 100;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.width = `${Math.random() * 3 + 1}px`;
+                particle.style.height = particle.style.width;
+                particle.style.backgroundColor = 'white';
+                particle.style.borderRadius = '50%';
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                
+                // Random position
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Random animation
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 5;
+                particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+                
+                particlesContainer.appendChild(particle);
+            }
+            
+            // Sales Chart
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            const salesChart = new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Sales 2023',
+                        data: [8500, 10200, 9800, 11500, 12500, 14500, 13800, 16200, 14800, 17500, 18900, 24589],
+                        borderColor: '#8A2BE2',
+                        backgroundColor: 'rgba(138, 43, 226, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#00F5D0',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Product Carousel
+            const products = [
+                { id: 1, name: 'Quantum Headphones', price: '$199', image: 'https://cdn-icons-png.flaticon.com/512/2913/2913109.png' },
+                { id: 2, name: 'Neon Smartwatch', price: '$249', image: 'https://cdn-icons-png.flaticon.com/512/2969/2969518.png' },
+                { id: 3, name: 'Holographic Keyboard', price: '$149', image: 'https://cdn-icons-png.flaticon.com/512/2933/2933245.png' },
+                { id: 4, name: 'VR Headset Pro', price: '$399', image: 'https://cdn-icons-png.flaticon.com/512/3565/3565418.png' },
+                { id: 5, name: 'AI Speaker', price: '$179', image: 'https://cdn-icons-png.flaticon.com/512/3659/3659898.png' }
+            ];
+            
+            const carousel = document.getElementById('carousel');
+            const carouselNav = document.getElementById('carousel-nav');
+            let currentIndex = 0;
+            
+            // Create carousel items
+            products.forEach((product, index) => {
+                const item = document.createElement('div');
+                item.className = 'carousel-item';
+                item.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}">
+                    <h3>${product.name}</h3>
+                    <div class="price">${product.price}</div>
+                `;
+                
+                // Position items in 3D space
+                updateItemPosition(item, index);
+                carousel.appendChild(item);
+                
+                // Create nav dots
+                const dot = document.createElement('div');
+                dot.className = 'carousel-dot';
+                if (index === 0) dot.classList.add('active');
+                dot.addEventListener('click', () => {
+                    currentIndex = index;
+                    updateCarousel();
+                });
+                carouselNav.appendChild(dot);
+            });
+            
+            function updateItemPosition(item, index, offset = 0) {
+                const angle = (index - offset) * (360 / products.length);
+                const radius = 200;
+                
+                // Convert angle to radians
+                const rad = angle * (Math.PI / 180);
+                
+                // Calculate x and z positions
+                const x = Math.sin(rad) * radius;
+                const z = Math.cos(rad) * radius;
+                
+                // Apply 3D transform
+                item.style.transform = `
+                    translate3d(calc(-50% + ${x}px), -50%, ${z}px)
+                    rotateY(${-angle}deg)
+                    scale(${1 - Math.abs(z) / (radius * 2)})
+                `;
+                
+                // Adjust opacity based on z-position
+                item.style.opacity = 1 - Math.abs(z) / (radius * 1.5);
+                item.style.zIndex = Math.round(radius - z);
+            }
+            
+            function updateCarousel() {
+                const items = document.querySelectorAll('.carousel-item');
+                const dots = document.querySelectorAll('.carousel-dot');
+                
+                items.forEach((item, index) => {
+                    updateItemPosition(item, index, currentIndex);
+                    
+                    // Set active class to center item
+                    if (index === currentIndex) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+                
+                dots.forEach((dot, index) => {
+                    if (index === currentIndex) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Auto-rotate carousel
+            setInterval(() => {
+                currentIndex = (currentIndex + 1) % products.length;
+                updateCarousel();
+            }, 3000);
+            
+            // Initialize 3D Globe
+            initGlobe();
+        });
+        
+        function initGlobe() {
+            const container = document.getElementById('globe');
+            
+            // Set up Three.js scene
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+            
+            // Create globe
+            const geometry = new THREE.SphereGeometry(5, 32, 32);
+            const texture = new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+            const material = new THREE.MeshPhongMaterial({
+                map: texture,
+                transparent: true,
+                opacity: 0.9,
+                shininess: 5
+            });
+            const globe = new THREE.Mesh(geometry, material);
+            scene.add(globe);
+            
+            // Add atmosphere glow
+            const atmosphereGeometry = new THREE.SphereGeometry(5.1, 32, 32);
+            const atmosphereMaterial = new THREE.ShaderMaterial({
+                uniforms: {},
+                vertexShader: `
+                    varying vec3 vNormal;
+                    void main() {
+                        vNormal = normalize(normalMatrix * normal);
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    varying vec3 vNormal;
+                    void main() {
+                        float intensity = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
+                        gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity;
+                    }
+                `,
+                side: THREE.BackSide,
+                blending: THREE.AdditiveBlending,
+                transparent: true
+            });
+            const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+            scene.add(atmosphere);
+            
+            // Add lights
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 3, 5);
+            scene.add(directionalLight);
+            
+            // Camera position
+            camera.position.z = 10;
+            
+            // Add glowing dots for sales data
+            const salesData = [
+                { lat: 40.7128, lng: -74.0060, size: 0.3, color: 0xff10f0 }, // New York
+                { lat: 51.5074, lng: -0.1278, size: 0.4, color: 0x00f5d0 },   // London
+                { lat: 35.6762, lng: 139.6503, size: 0.5, color: 0x8a2be2 },  // Tokyo
+                { lat: 22.3193, lng: 114.1694, size: 0.3, color: 0xff10f0 },  // Hong Kong
+                { lat: -33.8688, lng: 151.2093, size: 0.2, color: 0x00f5d0 }, // Sydney
+                { lat: -23.5505, lng: -46.6333, size: 0.3, color: 0x8a2be2 }  // São Paulo
+            ];
+            
+            salesData.forEach(point => {
+                const phi = (90 - point.lat) * (Math.PI / 180);
+                const theta = (point.lng + 180) * (Math.PI / 180);
+                
+                const x = -5 * Math.sin(phi) * Math.cos(theta);
+                const y = 5 * Math.cos(phi);
+                const z = 5 * Math.sin(phi) * Math.sin(theta);
+                
+                const dotGeometry = new THREE.SphereGeometry(point.size, 16, 16);
+                const dotMaterial = new THREE.MeshBasicMaterial({ color: point.color });
+                const dot = new THREE.Mesh(dotGeometry, dotMaterial);
+                dot.position.set(x, y, z);
+                scene.add(dot);
+                
+                // Add pulsing animation
+                let scale = 1;
+                function animateDot() {
+                    scale = scale > 1.3 ? 1 : scale + 0.005;
+                    dot.scale.set(scale, scale, scale);
+                    requestAnimationFrame(animateDot);
+                }
+                setTimeout(() => {
+                    animateDot();
+                }, Math.random() * 2000);
+            });
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                globe.rotation.y += 0.002;
+                atmosphere.rotation.y += 0.002;
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+    </script>
+</body>
+</html>
